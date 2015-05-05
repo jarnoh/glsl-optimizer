@@ -228,7 +228,7 @@ _mesa_ast_array_index_to_hir(void *mem_ctx,
        * dynamically uniform expression is undefined.
        */
       if (array->type->element_type()->is_sampler()) {
-	 if (!state->is_version(130, 100)) {
+	 if (!state->is_version(130, 130)) {
 	    if (state->es_shader) {
 	       _mesa_glsl_warning(&loc, state,
 				  "sampler arrays indexed with non-constant "
