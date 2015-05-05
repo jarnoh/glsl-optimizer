@@ -345,10 +345,21 @@ void ir_print_glsl_visitor::print_var_name (ir_variable* v)
 	}
     if (id)
     {
+#ifdef KEEP_LOCAL_VARIABLES
         if (v->data.mode == ir_var_temporary)
             buffer.asprintf_append ("tmpvar_%d", (int)id);
         else
             buffer.asprintf_append ("%s_%d", v->name, (int)id);
+#else
+        const int charsLen=53;
+        const char chars[charsLen+1] = "wrygxbza_AYRXWZoOIilSGBcdefhjkmnpqstuvCDEFHJKLMNPQTUV";
+        do
+        {
+            int ch = chars[id%charsLen];
+            buffer.asprintf_append ("%c", ch);
+            id /= charsLen;
+        } while(id>0);
+#endif
     }
 	else
 	{
