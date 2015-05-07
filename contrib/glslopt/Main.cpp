@@ -107,7 +107,8 @@ static int loadFile2(const char* filename)
             bufferAppendString(buf);
             bufferAppendString(" */ \n");
             
-            if(loadFile2(buf))
+            // prevent including itself
+            if(strncmp(buf, filename, 512)!=0 && loadFile2(buf))
             {
                 continue; // skip append
             }
