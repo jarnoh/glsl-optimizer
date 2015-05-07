@@ -42,10 +42,10 @@ static char* loadFile(const char* filename)
 	}
 
 	fseek(file, 0, SEEK_END);
-	const int size = ftell(file);
+	const long size = ftell(file);
 	fseek(file, 0, SEEK_SET);
 
-	char* result = malloc(size+1);
+	char* result = (char*)malloc(size+1);
 	const int count = (int)fread(result, 1, size, file);
 	result[count] = 0;
 
@@ -57,7 +57,12 @@ static bool saveFile(const char* filename, const char* data)
 {
 	int size = (int)strlen(data);
 
-	FILE* file = fopen(filename, "wt");
+    FILE* file = stdout;
+    
+    if(strcmp("-", filename)!=0)
+    {
+        file = fopen(filename, "wt");
+    }
 	if( !file )
 	{
 		printf( "Failed to open %s for writing\n", filename);
@@ -77,7 +82,7 @@ static bool saveFile(const char* filename, const char* data)
 
 static bool compileShader(const char* dstfilename, const char* srcfilename, bool vertexShader)
 {
-	const char* originalShader = loadFile(srcfilename);
+	char* originalShader = loadFile(srcfilename);
 	if( !originalShader )
 		return false;
 
@@ -111,7 +116,7 @@ int main(int argc, char* argv[])
 
 	for( int i=1; i < argc; i++ )
 	{
-		if( argv[i][0] == '-' )
+		if( !source && argv[i][0] == '-' )
 		{
 			if( 0 == strcmp("-v", argv[i]) )
 				vertexShader = true;
