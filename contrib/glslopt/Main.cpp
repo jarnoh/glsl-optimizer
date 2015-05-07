@@ -32,25 +32,110 @@ static void term()
 	glslopt_cleanup(gContext);
 }
 
+const long BLOCK_SIZE=65536;
+
+static char *buffer;
+static size_t bufferOffset = 0;
+static size_t bufferLength = 0;
+
+static void reallocBuffer(size_t len)
+{
+    if(len<BLOCK_SIZE) len = BLOCK_SIZE;
+    
+    if(bufferOffset+len>bufferLength)
+    {
+        bufferLength += len;
+        buffer = (char*)realloc(buffer, bufferLength);
+    }
+}
+
+static void bufferAppend(const char *s, size_t len)
+{
+    reallocBuffer(len);
+    memcpy(buffer+bufferOffset, s, len);
+    bufferOffset += len;
+}
+
+static void bufferAppendString(const char *s)
+{
+    bufferAppend(s, strlen(s));
+}
+
+static char *srelativeName(char *buffer, const char *fn1, const char* fn2)
+{
+    sprintf(buffer, "%s", fn1);
+
+    char *last = strrchr(buffer, '/');
+    
+    if(!last)
+        last=buffer;
+    else
+        last++;
+    
+    sprintf(last, fn2);
+    
+    return buffer;
+}
+
+static int loadFile2(const char* filename)
+{
+    FILE* file = fopen(filename, "rt");
+    if( !file )
+    {
+        fprintf(stderr, "Failed to open %s for reading\n", filename);
+        return 0;
+    }
+    
+    int success = 1;
+    
+    char *line = NULL;
+    size_t linecap;
+    ssize_t lineLen = 0;
+    while ((lineLen = getline(&line, &linecap, file))>0) {
+        
+        if(strncmp("#include", line, 8)==0)
+        {
+            char fn[512];
+            int found = sscanf(line, "#include \"%512[^\"]", fn);
+
+            if(found)
+            {
+            char buf[512];
+            srelativeName(buf, filename, fn);
+            
+            bufferAppendString("/* included from ");
+            bufferAppendString(buf);
+            bufferAppendString(" */ \n");
+            
+            if(loadFile2(buf))
+            {
+                continue; // skip append
+            }
+            else
+            {
+                success = 0;
+            }
+            }
+        }
+
+        bufferAppend(line, lineLen);
+    }
+    fclose(file);
+    return success;
+}
+
 static char* loadFile(const char* filename)
 {
-	FILE* file = fopen(filename, "rt");
-	if( !file )
-	{
-		printf("Failed to open %s for reading\n", filename);
-		return 0;
-	}
+    loadFile2(filename);
 
-	fseek(file, 0, SEEK_END);
-	const long size = ftell(file);
-	fseek(file, 0, SEEK_SET);
+    bufferAppend("\0", 1);
 
-	char* result = (char*)malloc(size+1);
-	const int count = (int)fread(result, 1, size, file);
-	result[count] = 0;
-
-	fclose(file);
-	return result;
+    char *result = buffer;
+    buffer = NULL;
+    bufferOffset = 0;
+    bufferLength = 0;
+    //printf(result);
+    return result;
 }
 
 static bool saveFile(const char* filename, const char* data)
