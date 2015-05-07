@@ -45,7 +45,7 @@ static char* loadFile(const char* filename)
 	const int size = ftell(file);
 	fseek(file, 0, SEEK_SET);
 
-	char* result = new char[size+1];
+	char* result = malloc(size+1);
 	const int count = (int)fread(result, 1, size, file);
 	result[count] = 0;
 
@@ -95,7 +95,7 @@ static bool compileShader(const char* dstfilename, const char* srcfilename, bool
 	if( !saveFile(dstfilename, optimizedShader) )
 		return false;
 
-	delete[] originalShader;
+	free(originalShader);
 	return true;
 }
 
