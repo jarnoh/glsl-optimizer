@@ -254,6 +254,8 @@ _mesa_print_ir_glsl(exec_list *instructions,
 			str.asprintf_append ("#extension GL_EXT_shader_framebuffer_fetch : enable\n");
 		if (state->ARB_shader_bit_encoding_enable)
 			str.asprintf_append("#extension GL_ARB_shader_bit_encoding : enable\n");
+        if (state->OES_EGL_image_external_enable)
+            str.asprintf_append("#extension GL_OES_EGL_image_external : enable\n");
 	}
 	
 	// remove unused struct declarations
