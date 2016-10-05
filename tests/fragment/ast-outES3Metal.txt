@@ -1,4 +1,5 @@
 #include <metal_stdlib>
+#pragma clang diagnostic ignored "-Wparentheses-equality"
 using namespace metal;
 struct xlatMtlShaderInput {
   float4 gl_FragCoord [[position]];
@@ -11,12 +12,13 @@ struct xlatMtlShaderUniform {
 fragment xlatMtlShaderOutput xlatMtlMain (xlatMtlShaderInput _mtl_i [[stage_in]], constant xlatMtlShaderUniform& _mtl_u [[buffer(0)]])
 {
   xlatMtlShaderOutput _mtl_o;
-  float a_2;
+  float a_2 = 0;
   if ((_mtl_i.gl_FragCoord.x == 1.0)) {
     discard_fragment();
   };
   a_2 = 4.0;
-  for (int i_1 = 0; i_1 < 10; i_1++, a_2 += 1.0) {
+  for (int i_1 = 0; i_1 < 10; i_1++) {
+    a_2 += 1.0;
   };
   while (true) {
     a_2 += 2.0;
